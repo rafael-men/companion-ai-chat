@@ -18,8 +18,12 @@ jest.mock('electron', () => {
         on: jest.fn(),
         setBackgroundColor: jest.fn(),
         setPosition: jest.fn(),
+        setSize: jest.fn(),
         setMinimumSize: jest.fn(),
         getPosition: jest.fn(() => [100, 50]),
+        getSize: jest.fn(() => [1200, 800]),
+        getMinWidth: jest.fn(() => 360),
+        getMinHeight: jest.fn(() => 240),
       })),
       { getAllWindows: jest.fn(() => []) }
     ),
@@ -165,6 +169,19 @@ describe('electron/main.cjs', () => {
     expect(winInstance.setPosition).toHaveBeenCalledWith(150, 70)
   })
 
+  test('createWindow - janela é criada com transparent: true e frame: false', async () => {
+    require('../../electron/main.cjs')
+    await Promise.resolve()
+
+    const { BrowserWindow } = require('electron')
+    expect(BrowserWindow).toHaveBeenCalledWith(
+      expect.objectContaining({
+        transparent: true,
+        frame: false,
+      })
+    )
+  })
+
   test('window:drag - end encerra o arrasto e interrompe o movimento', async () => {
     require('../../electron/main.cjs')
     await Promise.resolve()
@@ -181,5 +198,41 @@ describe('electron/main.cjs', () => {
     handler[1]({}, 'move')
 
     expect(winInstance.setPosition).not.toHaveBeenCalled()
+  })
+
+  test('window:resize - redimensiona a janela proporcionalmente ao delta do scroll', async () => {
+    require('../../electron/main.cjs')
+    await Promise.resolve()
+
+    const { ipcMain, BrowserWindow } = require('electron')
+    const handler = ipcMain.on.mock.calls.find(c => c[0] === 'window:resize')
+    expect(handler).toBeTruthy()
+
+    const winInstance = BrowserWindow.mock.results[0].value
+    winInstance.getSize = jest.fn(() => [1200, 800])
+    winInstance.getMinWidth = jest.fn(() => 360)
+    winInstance.getMinHeight = jest.fn(() => 240)
+
+    handler[1]({}, 120)
+    expect(winInstance.setSize).toHaveBeenCalledWith(1180, 780)
+
+    handler[1]({}, -120)
+    expect(winInstance.setSize).toHaveBeenCalledWith(1220, 820)
+  })
+
+  test('window:resize - respeita limites mínimos e máximos', async () => {
+    require('../../electron/main.cjs')
+    await Promise.resolve()
+
+    const { ipcMain, BrowserWindow } = require('electron')
+    const handler = ipcMain.on.mock.calls.find(c => c[0] === 'window:resize')
+
+    const winInstance = BrowserWindow.mock.results[0].value
+    winInstance.getSize = jest.fn(() => [370, 250])
+    winInstance.getMinWidth = jest.fn(() => 360)
+    winInstance.getMinHeight = jest.fn(() => 240)
+
+    handler[1]({}, 120)
+    expect(winInstance.setSize).toHaveBeenCalledWith(360, 240)
   })
 })

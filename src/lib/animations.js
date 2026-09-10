@@ -1,9 +1,7 @@
-// GERADO por scripts/gen-animations.mjs — rode `npm run animations` para atualizar.
-// Lista de animações VRMA disponíveis na pasta public/assets/animations/.
 export const ANIMACOES = [
   { file: "Greeting.vrma", label: "Greeting" },
-  { file: "ModelPose.vrma", label: "ModelPose" },
-  { file: "PeaceSign.vrma", label: "PeaceSign" },
+  { file: "Model Pose.vrma", label: "Model Pose" },
+  { file: "Peace Sign.vrma", label: "Peace Sign" },
   { file: "Shoot.vrma", label: "Shoot" },
   { file: "ShowFullBody.vrma", label: "ShowFullBody" },
   { file: "Spin.vrma", label: "Spin" },

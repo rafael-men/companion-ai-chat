@@ -26,14 +26,12 @@ export default function SidePanel({
   onAnimationChange,
   dark,
   onToggleDark,
-  transparente,
-  onToggleTransparencia,
 }) {
-  
+
   const [expanded, setExpanded] = useState(false)
   const [open, setOpen] = useState(false)
 
- 
+
   useEffect(() => {
     localStorage.setItem(
       "companion-config",
@@ -106,8 +104,6 @@ export default function SidePanel({
           onClose={() => setOpen(false)}
           dark={dark}
           onToggleDark={onToggleDark}
-          transparente={transparente}
-          onToggleTransparencia={onToggleTransparencia}
         />
       </aside>
     </TooltipProvider>

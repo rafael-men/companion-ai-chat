@@ -1,4 +1,4 @@
-const SELETORES_INTERATIVOS = "input, textarea, select, button"
+const SELETORES_INTERATIVOS = "input, textarea, select, button, a, [data-no-drag]"
 
 /**
  * @param {{electronAPI?: {arrastarJanela?: Function}, window?: Window}} [deps]
@@ -37,5 +37,35 @@ export function criarControleDeArrastoDeJanela(deps = {}) {
   return {
     onMouseDown: aoMouseDown,
     desativar: encerrarArrasto,
+  }
+}
+
+/**
+ * @param {{electronAPI?: {redimensionarJanela?: Function}, window?: Window}} [deps]
+ * @returns {{onWheel: Function, desativar: Function}}
+ */
+export function criarControleDeScrollParaRedimensionar(deps = {}) {
+  const w = deps.window ?? globalThis.window ?? null
+  const redimensionarJanela =
+    deps.electronAPI?.redimensionarJanela ?? globalThis.window?.electronAPI?.redimensionarJanela ?? null
+
+  let ativo = true
+
+  function aoWheel(evento) {
+    if (!ativo) return
+    if (evento.target?.closest?.(SELETORES_INTERATIVOS)) return
+    if (Math.abs(evento.deltaY) < 1) return
+
+    evento.preventDefault()
+    redimensionarJanela?.(evento.deltaY)
+  }
+
+  w?.addEventListener("wheel", aoWheel, { passive: false })
+
+  return {
+    desativar() {
+      ativo = false
+      w?.removeEventListener("wheel", aoWheel)
+    },
   }
 }

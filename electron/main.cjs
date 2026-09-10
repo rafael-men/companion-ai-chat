@@ -11,6 +11,7 @@ function createWindow() {
     minWidth: 800,
     minHeight: 600,
     title: 'Companion AI',
+    frame: false,
     transparent: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
@@ -55,6 +56,15 @@ ipcMain.on('window:drag', (_event, acao) => {
   } else if (acao === 'end') {
     dragOffset = null
   }
+})
+
+ipcMain.on('window:resize', (_event, delta) => {
+  if (!mainWindow) return
+  const [w, h] = mainWindow.getSize()
+  const fator = delta > 0 ? -20 : 20
+  const novoW = Math.max(mainWindow.getMinWidth(), Math.min(3840, w + fator))
+  const novoH = Math.max(mainWindow.getMinHeight(), Math.min(2160, h + fator))
+  mainWindow.setSize(novoW, novoH)
 })
 
 app.whenReady().then(createWindow)

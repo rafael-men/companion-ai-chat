@@ -76,7 +76,7 @@ export const VRMAvatar = ({ avatar, animation = null, animationLoop = true, onAn
     });
 
     return (
-        <group {...props}>
+        <group {...props} scale={1.25} position={[0, -0.35, 0]}>
             <primitive object={scene} />
         </group>
     );

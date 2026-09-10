@@ -62,4 +62,17 @@ describe('electron/preload.cjs', () => {
     api.arrastarJanela('end')
     expect(ipcRenderer.send).toHaveBeenCalledWith('window:drag', 'end')
   })
+
+  test('redimensionarJanela envia evento de resize', () => {
+    require('../../electron/preload.cjs')
+    const { contextBridge, ipcRenderer } = require('electron')
+
+    const api = contextBridge.exposeInMainWorld.mock.calls[0][1]
+
+    api.redimensionarJanela(120)
+    expect(ipcRenderer.send).toHaveBeenCalledWith('window:resize', 120)
+
+    api.redimensionarJanela(-120)
+    expect(ipcRenderer.send).toHaveBeenCalledWith('window:resize', -120)
+  })
 })

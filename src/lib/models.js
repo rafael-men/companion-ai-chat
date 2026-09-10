@@ -1,5 +1,3 @@
-// GERADO por scripts/gen-models.mjs — rode `npm run models` para atualizar.
-// Lista de avatares VRM disponíveis na pasta public/models/.
 export const MODELOS = [
   { file: "Agnes Tachyon.vrm", label: "Agnes Tachyon" },
   { file: "Cafe Manhattan.vrm", label: "Cafe Manhattan" },

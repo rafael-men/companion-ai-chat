@@ -234,6 +234,28 @@ html, body, #root {
 }
 
 
+.chat-fade {
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 12%
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 12%
+  );
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+
 .chatbox-glass {
   background: var(--glass-bg-light);
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
@@ -503,18 +525,6 @@ html.transparent-mode .sidebar-glass {
   display: none;
 }
 
-html.transparent-mode .chatbox-drag {
-  cursor: move;
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-html.transparent-mode .chatbox-drag input {
-  cursor: text;
-  user-select: text;
-  -webkit-user-select: text;
-}
-
-html.transparent-mode .chatbox-drag button {
-  cursor: pointer;
+html.transparent-mode .transparente-app {
+  cursor: default;
 }

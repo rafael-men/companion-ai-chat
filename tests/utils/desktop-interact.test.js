@@ -1,14 +1,11 @@
-/**
- * @jest-environment jsdom
- */
-import { criarControleDeArrastoDeJanela } from '../../utils/desktop-interact.js'
+import { criarControleDeArrastoDeJanela, criarControleDeScrollParaRedimensionar } from '../../utils/desktop-interact.js'
 
 function criarFakeWindow() {
   const ouvintes = {}
   return {
-    addEventListener: jest.fn((tipo, fn) => { ouvintes[tipo] = fn }),
+    addEventListener: jest.fn((tipo, fn, opts) => { ouvintes[tipo] = fn }),
     removeEventListener: jest.fn((tipo) => { delete ouvintes[tipo] }),
-    disparar(tipo, evento) { ouvintes[tipo]?.(evento) },
+    disparar(tipo, evento, opts) { ouvintes[tipo]?.(evento) },
   }
 }
 
@@ -88,5 +85,58 @@ describe('criarControleDeArrastoDeJanela', () => {
 
     win.disparar('mousemove', {})
     expect(electronAPI.arrastarJanela).toHaveBeenCalledTimes(2)
+  })
+})
+
+describe('criarControleDeScrollParaRedimensionar', () => {
+  let electronAPI
+  let win
+
+  beforeEach(() => {
+    electronAPI = { redimensionarJanela: jest.fn() }
+    win = criarFakeWindow()
+  })
+
+  test('wheel com deltaY significativo chama redimensionarJanela', () => {
+    criarControleDeScrollParaRedimensionar({ electronAPI, window: win })
+
+    const evento = { deltaY: 120, target: criarAlvo(false), preventDefault: jest.fn() }
+    win.disparar('wheel', evento)
+
+    expect(electronAPI.redimensionarJanela).toHaveBeenCalledWith(120)
+    expect(evento.preventDefault).toHaveBeenCalled()
+  })
+
+  test('wheel em elemento interativo não redimensiona', () => {
+    criarControleDeScrollParaRedimensionar({ electronAPI, window: win })
+
+    win.disparar('wheel', { deltaY: 120, target: criarAlvo(true) })
+
+    expect(electronAPI.redimensionarJanela).not.toHaveBeenCalled()
+  })
+
+  test(' deltaY pequeno ignora o evento', () => {
+    criarControleDeScrollParaRedimensionar({ electronAPI, window: win })
+
+    win.disparar('wheel', { deltaY: 0.5, target: criarAlvo(false) })
+
+    expect(electronAPI.redimensionarJanela).not.toHaveBeenCalled()
+  })
+
+  test('desativar para de redimensionar', () => {
+    const controle = criarControleDeScrollParaRedimensionar({ electronAPI, window: win })
+
+    controle.desativar()
+    win.disparar('wheel', { deltaY: 120, target: criarAlvo(false) })
+
+    expect(electronAPI.redimensionarJanela).not.toHaveBeenCalled()
+  })
+
+  test('funciona sem electronAPI', () => {
+    expect(() => {
+      const controle = criarControleDeScrollParaRedimensionar({ window: win })
+      win.disparar('wheel', { deltaY: 120, target: criarAlvo(false), preventDefault: jest.fn() })
+      controle.desativar()
+    }).not.toThrow()
   })
 })

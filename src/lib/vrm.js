@@ -1,10 +1,11 @@
 import { VRMUtils } from '@pixiv/three-vrm'
+import { Box3, Vector3 } from 'three'
 
 
 const POSE = {
-  spread: 0.12, 
-  forward: 0.18, 
-  elbow: 0.25,    
+  spread: 0.12,
+  forward: 0.18,
+  elbow: 0.25,
 }
 
 
@@ -36,10 +37,16 @@ export function prepararAvatar(scene, vrm) {
     obj.frustumCulled = false
   })
 
-  
+  if (scene && typeof scene.updateWorldMatrix === 'function') {
+    const box = new Box3().setFromObject(scene)
+    const center = new Vector3()
+    box.getCenter(center)
+
+    scene.position.set(-center.x, -box.min.y, -center.z)
+  }
+
   vrm._isVRM0 = vrm.meta?.metaVersion === "0"
 
- 
   const head = vrm.humanoid?.getNormalizedBoneNode("head")
   vrm._headBind = head ? { x: head.rotation.x, y: head.rotation.y } : { x: 0, y: 0 }
 }
@@ -81,10 +88,7 @@ function applyIdleMotion(humanoid, t, breath) {
 }
 
 
-/**
- * Controla a entrada/saída suave dos gestos, guardando estado no próprio vrm.
- * Retorna o gesto efetivamente ativo (com decaimento após o fim).
- */
+
 function atualizarGesto(vrm, t, delta, gesture) {
   if (gesture) {
     if (vrm._gestoAtual !== gesture) {
@@ -134,18 +138,20 @@ function applyHead(vrm, humanoid, t, delta, gesture, mouse) {
 
 
 function applyEmotion(expr, emotion) {
-  const values = {
-    happy: { joy: 1, neutral: 0, sorrow: 0, anger: 0 },
-    sad: { joy: 0, neutral: 0, sorrow: 1, anger: 0 },
-    angry: { joy: 0, neutral: 0, sorrow: 0, anger: 1 },
-    playful: { joy: 0.8, neutral: 0, sorrow: 0, anger: 0 },
-    neutral: { joy: 0, neutral: 1, sorrow: 0, anger: 0 },
-  }[emotion] || { joy: 0, neutral: 1, sorrow: 0, anger: 0 }
+  const map = {
+    happy: { happy: 1, sad: 0, angry: 0, relaxed: 0, neutral: 0 },
+    sad: { happy: 0, sad: 1, angry: 0, relaxed: 0, neutral: 0 },
+    angry: { happy: 0, sad: 0, angry: 1, relaxed: 0, neutral: 0 },
+    playful: { happy: 0.8, sad: 0, angry: 0, relaxed: 0.2, neutral: 0 },
+    neutral: { happy: 0, sad: 0, angry: 0, relaxed: 0, neutral: 1 },
+  }
+  const v = map[emotion] || map.neutral
 
-  setExpr(expr, ["joy", "Joy"], values.joy)
-  setExpr(expr, ["sorrow", "Sorrow"], values.sorrow)
-  setExpr(expr, ["anger", "Angry"], values.anger)
-  setExpr(expr, ["neutral", "Neutral"], values.neutral)
+  setExpr(expr, ["happy", "Joy"], v.happy)
+  setExpr(expr, ["sad", "Sorrow"], v.sad)
+  setExpr(expr, ["angry", "Angry"], v.angry)
+  setExpr(expr, ["relaxed", "Fun"], v.relaxed)
+  setExpr(expr, ["neutral", "Neutral"], v.neutral)
 }
 
 function applyBlink(vrm, expr, t, eyesClosed = false) {
@@ -200,8 +206,7 @@ export function animarAvatar(vrm, t, delta, intensities, armAngle = 1.0, gesture
 
   vrm._mixer?.update(delta)
 
-  // Quando uma animação VRMA está ativa, ela controla o esqueleto;
-  // o procedural fica limitado às expressões (blink, lip sync, emoção).
+ 
   if (vrm._vrmaAtivo === true) {
     const expr = vrm.expressionManager
     if (expr) {

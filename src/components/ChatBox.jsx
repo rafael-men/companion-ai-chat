@@ -2,23 +2,12 @@ import { useEffect, useRef, useState } from "react"
 import { Send, Mic, MicOff } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { criarControleDeArrastoDeJanela } from "../../utils/desktop-interact.js"
 
-export default function ChatBox({ onSend, transparente }) {
+export default function ChatBox({ onSend }) {
   const [message, setMessage] = useState("")
   const [recording, setRecording] = useState(false)
   const recognitionRef = useRef(null)
   const sendAudioTimerRef = useRef(null)
-  const controleArrastoRef = useRef(null)
-
-  if (transparente && !controleArrastoRef.current) {
-    controleArrastoRef.current = criarControleDeArrastoDeJanela()
-  } else if (!transparente && controleArrastoRef.current) {
-    controleArrastoRef.current.desativar()
-    controleArrastoRef.current = null
-  }
-
-  const onMouseDown = transparente ? controleArrastoRef.current?.onMouseDown : undefined
 
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
@@ -79,9 +68,7 @@ export default function ChatBox({ onSend, transparente }) {
 
   return (
     <div
-      className={`fixed inset-x-0 bottom-3 z-10 px-3 sm:bottom-5 sm:pl-16 sm:pr-4${transparente ? " chatbox-drag" : ""}`}
-      onMouseDown={onMouseDown}
-      title={transparente ? "Arraste pela barra para mover a janela" : undefined}
+      className="fixed inset-x-0 bottom-3 z-10 px-3 sm:bottom-5 sm:pl-16 sm:pr-4"
     >
       <form
         onSubmit={handleSubmit}
